@@ -30,6 +30,9 @@ buildwine64image:
 buildwine32image:
 	docker build -t $(IMAGE32) wine32/
 
+buildwine32image-alt:
+	docker build -t $(IMAGE32)-alt wine32/
+
 rebuildwine64image:
 	docker build --no-cache=true -t $(IMAGE64) wine64/
 
@@ -39,11 +42,16 @@ rebuildwine32image:
 buildwine32:
 	docker run -it --rm --name $(INSTANCE32) --volumes-from $(DATA) $(IMAGE32)
 
+buildwine32-alt:
+	docker run -it --rm --name $(INSTANCE32) --volumes-from $(DATA) $(IMAGE32)-alt
 
 startimage64bash:
 	docker run -it --rm --name $(INSTANCE64) $(IMAGE64) /bin/bash
 
 startimage32bash:
+	docker run -it --rm --name $(INSTANCE32) --volumes-from $(DATA) $(IMAGE32) /bin/bash
+
+startimage32bash-alt:
 	docker run -it --rm --name $(INSTANCE32) --volumes-from $(DATA) $(IMAGE32) /bin/bash
 
 stopbuilder32:

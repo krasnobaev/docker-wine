@@ -13,17 +13,20 @@ second for 32 bit wine.
 apt-get installs wine to `/usr/bin`, this repository use the same folder.
 Therefore you should `apt-get remove` before any `make install`.
 
-There is no ubuntu 32 bit image for docker, but `dpkg --add-architecture i386`
-makes possible to done all magic.
+There is no native ubuntu 32 bit image for docker, but 
+`dpkg --add-architecture i386` makes possible to done all magic. Another option
+is to use `besn0847/ubuntu32` docker image which implemented in `wine32-alt`
+folder.
 
 Native lxc implementation may be more simpler and effective, but I don't like
 lxc.
 
 What has been tested with wine 1.7.28 builded with this doodad:
-- [Chaos Theory demo](http://www.pouet.net/prod.php?which=25774) — both 32/64
-- Steam — 32 only
-- Terraria — 32 only
-- FL Studio 11 (64bit installation) — 32 only
+- [Chaos Theory demo x86](http://www.pouet.net/prod.php?which=25774) — wine 32/64
+- Steam x86 — wine 32/64
+- Terraria (through Steam) — wine 32
+- Terraria (through Steam) — wine 64 — crashes in game menu
+- FL Studio 11 x64 — wine 32
 
 other tests — later
 
@@ -77,11 +80,14 @@ ToDo's
 - make tests
 - install other dependent packages to make possible compiling of full-featured wine
 - add option to install in other folder than `/usr/bin`
+- use `docker commit`?
 
 Links
 -----
 [Win64 Support for Wine](http://wiki.winehq.org/Wine64) — some notes for wow64
 used in this repository by [winehq.org](winehq.org).
+
+[Script to install build-time dependencies for Wine](https://winezeug.googlecode.com/svn/trunk/install-wine-deps.sh)
 
 [ASIO SDK](http://www.steinberg.net/en/company/developers.html)
 
