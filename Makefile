@@ -5,7 +5,10 @@ INSTANCE64 = wine64-builder
 DATAGIT = wine-git
 VER     = 1.7.28
 NAME    = wine-$(VER)
-DATA    = $(NAME)-data
+REV     = -2
+BLDVER  = $(NAME)$(REV)
+DATA    = $(NAME)-data$(REV)
+OUTPUTDIR = ~/
 
 build: buildwine64image startdata buildwine32image buildwine32 copywinetohost
 
@@ -16,6 +19,8 @@ install:
 	make install
 	cd /usr/src/wine64
 	make install
+	cp /usr/src/wineasio/wineasio_32bit.dll.so /usr/lib/wine/
+	cp /usr/src/wineasio/wineasio_64bit.dll.so /usr/lib64/wine/
 
 #######################################
 # WORK WITH IMAGES
@@ -26,19 +31,20 @@ buildwine32image:
 	docker build -t $(IMAGE32) wine32/
 
 rebuildwine64image:
-	docker build -t --no-cache=true $(IMAGE64) wine64/
+	docker build --no-cache=true -t $(IMAGE64) wine64/
 
 rebuildwine32image:
-	docker build -t --no-cache=true $(IMAGE32) wine32/
+	docker build --no-cache=true -t $(IMAGE32) wine32/
 
 buildwine32:
 	docker run -it --rm --name $(INSTANCE32) --volumes-from $(DATA) $(IMAGE32)
 
-startimage32bash:
-	docker run -it --rm --name $(INSTANCE32) --volumes-from $(DATA) $(IMAGE32) /bin/bash
 
 startimage64bash:
 	docker run -it --rm --name $(INSTANCE64) $(IMAGE64) /bin/bash
+
+startimage32bash:
+	docker run -it --rm --name $(INSTANCE32) --volumes-from $(DATA) $(IMAGE32) /bin/bash
 
 stopbuilder32:
 	docker stop $(INSTANCE32)
@@ -71,10 +77,16 @@ enterdata:
 	docker-enter $(DATA)
 
 copywinetohost:
-	mkdir -p /usr/src/$(NAME)
+	mkdir -p $(OUTPUTDIR)/$(BLDVER)
 	docker run -it --rm --volumes-from $(DATA) \
-		-v /usr/local/src/$(NAME):/tmp/output busybox \
-		cp -a /usr/src/wine32 /usr/src/wine64 /tmp/output/
-	ln -s /usr/local/src/$(NAME)/wine32 /usr/src/wine32
-	ln -s /usr/local/src/$(NAME)/wine64 /usr/src/wine64
+		-v $(OUTPUTDIR)/$(BLDVER):/tmp/output busybox \
+		cp -a /usr/src/wine32 /usr/src/wine64 /usr/src/wineasio /tmp/output/
+	#ln -s /usr/local/src/$(NAME)/wine32 /usr/src/wine32
+	#ln -s /usr/local/src/$(NAME)/wine64 /usr/src/wine64
+
+copywinetohost-tar:
+	mkdir -p $(OUTPUTDIR)
+	docker run -it --rm --volumes-from $(DATA) \
+		-v $(OUTPUTDIR):/tmp/output ubuntu \
+		tar -czf /tmp/output/$(BLDVER).tgz /usr/src/wine32 /usr/src/wine64 /usr/src/wineasio
 

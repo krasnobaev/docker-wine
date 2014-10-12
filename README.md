@@ -40,27 +40,37 @@ makefile
 
 Possible steps
 --------------
+
+Preparing:
 ```bash
 sudo apt-get install docker
 git clone https://github.com/krasnobaev/docker-wine
+```
+
+Building:
+```bash
 cd docker-wine
 sudo make buildwine64image
 sudo make startdata
 sudo make buildwine32image
 sudo make buildwine32
 sudo make copywinetohost
+```
 
+Installing:
+```bash
 cd /usr/src/wine-git
 git checkout $WINE-VERSION
 cd /usr/src/wine32
 sudo make install
 cd /usr/src/wine64
 sudo make install
+cp /usr/src/wineasio/wineasio_32bit.dll.so /usr/lib/wine/
+cp /usr/src/wineasio/wineasio_64bit.dll.so /usr/lib64/wine/
 ```
 
 ToDo's
 ------
-- implement wineasio (32/64 bit) compilation
 - make ubuntu/debian package on output
 - test whether it is possible to done all magic inside one container
 - move wine-git to data container?
@@ -72,6 +82,8 @@ Links
 -----
 [Win64 Support for Wine](http://wiki.winehq.org/Wine64) — some notes for wow64
 used in this repository by [winehq.org](winehq.org).
+
+[ASIO SDK](http://www.steinberg.net/en/company/developers.html)
 
 my [docker workflow template](https://github.com/krasnobaev/docker-doc-template)
 
