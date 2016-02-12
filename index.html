@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Docker-wine by krasnobaev</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Docker-wine</h1>
+      <h2 class="project-tagline">This will build wine 32 and 64 with a shared WoW64 setup for ubuntu using docker</h2>
+      <a href="https://github.com/krasnobaev/docker-wine" class="btn">View on GitHub</a>
+      <a href="https://github.com/krasnobaev/docker-wine/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/krasnobaev/docker-wine/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="build-wine-inside-docker-container" class="anchor" href="#build-wine-inside-docker-container" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Build wine inside docker container</h1>
+
+<p>If you want latest wine both 32/64 bit you should compile it by yourself.
+The problem is that you require to install both 32/64 bit development libraries
+on your compiling machine. But you can not to do this if you use containers.</p>
+
+<p>LXC implementation may be simpler, but I don't like LXC.</p>
+
+<p>Current implementation uses two images: one for compiling 64 bit wine and
+second for 32 bit wine.</p>
+
+<p>apt-get installs wine to <code>/usr/bin</code>, this repository use the same folder.
+Therefore you should <code>apt-get remove</code> before any <code>make install</code>.</p>
+
+<p>There is no native ubuntu 32 bit image for docker, but 
+<code>dpkg --add-architecture i386</code> makes possible to done all magic. Another option
+is to use <code>besn0847/ubuntu32</code> docker image which implemented in <code>wine32-alt</code>
+folder.</p>
+
+<p>Native lxc implementation may be more simpler and effective, but I don't like
+lxc.</p>
+
+<p>What has been tested with wine 1.7.28 builded with this doodad:</p>
+
+<ul>
+<li>
+<a href="http://www.pouet.net/prod.php?which=25774">Chaos Theory demo x86</a> — wine 32/64</li>
+<li>Steam x86 — wine 32/64</li>
+<li>Terraria (through Steam) — wine 32</li>
+<li>Terraria (through Steam) — wine 64 — crashes in game menu</li>
+<li>FL Studio 11 x64 — wine 32</li>
+</ul>
+
+<p>other tests — later</p>
+
+<h2>
+<a id="current-issues" class="anchor" href="#current-issues" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Current issues</h2>
+
+<p><code>./configure</code> tells that some features like <code>OpenCL</code> is not supported because
+it requires some development libraries to be installed.</p>
+
+<h2>
+<a id="prerequisites" class="anchor" href="#prerequisites" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Prerequisites</h2>
+
+<p>docker</p>
+
+<p>makefile</p>
+
+<h2>
+<a id="possible-steps" class="anchor" href="#possible-steps" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Possible steps</h2>
+
+<p>Preparing:</p>
+
+<div class="highlight highlight-source-shell"><pre>sudo apt-get install docker
+git clone https://github.com/krasnobaev/docker-wine</pre></div>
+
+<p>Building:</p>
+
+<div class="highlight highlight-source-shell"><pre><span class="pl-c1">cd</span> docker-wine
+sudo make buildwine64image
+sudo make startdata
+sudo make buildwine32image
+sudo make buildwine32
+sudo make copywinetohost</pre></div>
+
+<p>Installing:</p>
+
+<div class="highlight highlight-source-shell"><pre><span class="pl-c1">cd</span> /usr/src/wine-git
+git checkout <span class="pl-smi">$WINE</span>-VERSION
+<span class="pl-c1">cd</span> /usr/src/wine32
+sudo make install
+<span class="pl-c1">cd</span> /usr/src/wine64
+sudo make install
+cp /usr/src/wineasio/wineasio_32bit.dll.so /usr/lib/wine/
+cp /usr/src/wineasio/wineasio_64bit.dll.so /usr/lib64/wine/</pre></div>
+
+<h2>
+<a id="todos" class="anchor" href="#todos" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>ToDo's</h2>
+
+<ul>
+<li>make ubuntu/debian package on output</li>
+<li>test whether it is possible to done all magic inside one container</li>
+<li>move wine-git to data container?</li>
+<li>make tests</li>
+<li>install other dependent packages to make possible compiling of full-featured wine</li>
+<li>add option to install in other folder than <code>/usr/bin</code>
+</li>
+<li>use <code>docker commit</code>?</li>
+</ul>
+
+<h2>
+<a id="links" class="anchor" href="#links" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Links</h2>
+
+<p><a href="http://wiki.winehq.org/Wine64">Win64 Support for Wine</a> — some notes for wow64
+used in this repository by <a href="winehq.org">winehq.org</a>.</p>
+
+<p><a href="https://winezeug.googlecode.com/svn/trunk/install-wine-deps.sh">Script to install build-time dependencies for Wine</a></p>
+
+<p><a href="http://www.steinberg.net/en/company/developers.html">ASIO SDK</a></p>
+
+<p>my <a href="https://github.com/krasnobaev/docker-doc-template">docker workflow template</a></p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/krasnobaev/docker-wine">Docker-wine</a> is maintained by <a href="https://github.com/krasnobaev">krasnobaev</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
